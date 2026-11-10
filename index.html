@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EEMA - Sistema de Relatórios</title>
+    <!-- Aqui conectamos nosso arquivo CSS separado -->
+    <link rel="stylesheet" href="css/relatorio.css">
+</head>
+<body>
+
+    <!-- Botões de Controle (Não saem na impressão) -->
+    <div class="painel-controle no-print">
+        <h2>Painel do Especialista</h2>
+        <div>
+            <button onclick="gerarTextoInteligente()">1. Gerar Texto Padrão</button>
+            <button onclick="window.print()">2. Salvar PDF / Imprimir</button>
+            <a href="etiqueta.html"><button>3. Ir para Etiqueta</button></a>
+        </div>
+    </div>
+
+    <!-- A Folha A4 do Relatório -->
+    <div class="page">
+        <div class="header">
+            <!-- A logo puxada da pasta assets -->
+            <img src="assets/logo.png" alt="Logo EEMA" class="logo">
+            <div class="header-text">
+                <p>E. E. Mestra Aurora — Plataforma de Governança Pedagógica</p>
+                <h1>RELATÓRIO PEDAGÓGICO INDIVIDUAL</h1>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="info-bar">
+            <div class="info-col">
+                <span class="info-label">ESTUDANTE</span>
+                <span class="info-value" id="nome-estudante">Carlos Henrique Mota Leite</span>
+            </div>
+            <div class="info-col">
+                <span class="info-label">ANO/TURMA</span>
+                <span class="info-value">6º ANO - Turma 6º REG 2</span>
+            </div>
+        </div>
+
+        <!-- AQUI ESTÁ A MÁGICA DA EDIÇÃO: contenteditable="true" -->
+        <div class="content-box" id="caixa-texto" contenteditable="true">
+            <p style="color: #999; text-align: center; margin-top: 50px;">
+                <em>Clique em "Gerar Texto Padrão" no painel acima.<br>Depois de gerado, clique aqui dentro para digitar, corrigir ou acrescentar o que desejar.</em>
+            </p>
+        </div>
+
+        <div class="footer">
+            <div class="date" id="data-atual">Carbonita - MG, 10 de novembro de 2026.</div>
+            <div class="signature-box">
+                <div class="sig-line"></div>
+                <div class="sig-name">Carlos André Vieira - MASP: 1.313.442-4</div>
+                <div class="sig-role">Especialista da Educação Básica - Supervisor Pedagógico</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conectando a inteligência JavaScript -->
+    <script src="js/inteligencias.js"></script>
+    <script src="js/interacoes.js"></script>
+</body>
+</html>

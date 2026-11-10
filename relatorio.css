@@ -1,0 +1,150 @@
+/* =========================================
+   ESTILOS GLOBAIS E ESTRUTURA
+   ========================================= */
+body {
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 30px;
+    background-color: #f4f4f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Painel Superior (Não aparece na impressão) */
+.painel-controle {
+    background-color: #0b2240;
+    width: 100%;
+    max-width: 800px;
+    padding: 20px 30px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.painel-controle h2 { margin: 0; font-size: 18px; }
+.painel-controle button {
+    background-color: #fff;
+    color: #0b2240;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: 0.2s;
+}
+.painel-controle button:hover { background-color: #e2e8f0; }
+
+/* A "Folha A4" na tela */
+.page {
+    background-color: #fff;
+    max-width: 800px;
+    width: 100%;
+    padding: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    border-radius: 4px;
+}
+
+/* =========================================
+   CABEÇALHO
+   ========================================= */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+.logo {
+    width: 70px;
+    height: 70px;
+    margin-right: 20px;
+    object-fit: contain;
+}
+.header-text { display: flex; flex-direction: column; }
+.header-text p {
+    margin: 0 0 2px 0;
+    font-size: 12px;
+    color: #555;
+}
+.header-text h1 {
+    margin: 0;
+    font-size: 22px;
+    color: #0b3975;
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+}
+
+.divider { border-top: 2px solid #000; margin-bottom: 25px; }
+
+/* =========================================
+   DADOS DO ESTUDANTE
+   ========================================= */
+.info-bar {
+    background-color: #eff3fa;
+    border-radius: 8px;
+    padding: 12px 25px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+}
+.info-col { display: flex; flex-direction: column; }
+.info-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: #5c5aa3;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.info-value { font-size: 14px; font-weight: bold; color: #0b2240; }
+
+/* =========================================
+   CAIXA EDITÁVEL DE TEXTO
+   ========================================= */
+.content-box {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 35px 30px;
+    margin-bottom: 60px;
+    min-height: 400px; /* Garante espaço para digitação */
+    outline: none; /* Remove a borda azul ao clicar */
+    transition: 0.3s;
+}
+/* Dá um leve brilho quando você clica para editar */
+.content-box:focus { border-color: #5c5aa3; box-shadow: 0 0 0 3px rgba(92, 90, 163, 0.1); }
+
+.content-box p {
+    text-align: justify;
+    line-height: 1.6;
+    font-size: 14px;
+    margin-top: 0;
+    margin-bottom: 12px;
+    text-indent: 30px; /* O recuo clássico da primeira linha */
+    color: #333;
+}
+
+/* =========================================
+   RODAPÉ E ASSINATURA
+   ========================================= */
+.footer { display: flex; flex-direction: column; align-items: flex-end; }
+.date { font-size: 12px; font-weight: 600; margin-bottom: 40px; color: #333; }
+.signature-box { display: flex; flex-direction: column; align-items: center; width: 320px; }
+.sig-line { border-top: 1px solid #000; width: 100%; margin-bottom: 6px; }
+.sig-name { font-size: 13px; font-weight: 900; color: #0b3975; margin-bottom: 2px; }
+.sig-role { font-size: 11px; color: #666; }
+
+/* =========================================
+   REGRAS DE IMPRESSÃO (O MODO A4 REAL)
+   ========================================= */
+@media print {
+    body { background-color: transparent; padding: 0; display: block; }
+    .no-print { display: none; /* Esconde os botões */ }
+    .page { box-shadow: none; max-width: 100%; padding: 0; border-radius: 0; }
+    .content-box { border: none; padding: 0; } /* Remove a borda da caixa de texto no papel */
+}
