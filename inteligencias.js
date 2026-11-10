@@ -1,72 +1,54 @@
-/* =========================================================================
-   MOTOR DE TEXTO: Lógica para conectar frases respeitando normas gramaticais
-   ========================================================================= */
-
-// Simulação dos dados que virão do seu Forms/Planilha para o Carlos Henrique
 const dadosDoAluno = {
     nome: "Carlos Henrique Mota Leite",
     docentes: [
-        { id: 1, frequente: true,  convivio: "ótima convivência com todos", desempenho: "melhora na leitura e comportamento, porém lentidão em copiar atividades e não faz o dever" },
-        { id: 2, frequente: true,  convivio: "interage bem", desempenho: "extrema dispersão e desmotivação, não consegue manter foco, muito distraído" },
-        { id: 3, frequente: true,  convivio: "respeitador", desempenho: "dificuldade de aprendizagem e lentidão extrema, mas apresentou evolução se comparado ao ano anterior" },
-        { id: 4, frequente: false, convivio: "mexe muito com os colegas", desempenho: "extrema dificuldade e desinteresse profundo" }
+        { id: 1, frequente: true,  convivio: "convive bem com todos", desempenho: "apresentou melhora na leitura e comporta-se muito bem, mas ainda é muito lento para copiar as atividades e dificilmente realiza as tarefas de casa" },
+        { id: 2, frequente: true,  convivio: "interage bem", desempenho: "é muito disperso, desinteressado, desmotivado e conversa bastante. Apresenta muita dificuldade de aprendizagem e não consegue concentrar nas atividades" },
+        { id: 3, frequente: true,  convivio: "tem uma boa convivência e respeita os colegas", desempenho: "apresenta dificuldade e lentidão para copiar as atividades. Contudo, apresentou uma melhora comparando ao ano anterior" },
+        { id: 4, frequente: true, convivio: "interage pouco com os colegas e mexe muito com eles", desempenho: "apresenta extrema dificuldade de aprendizado, sendo extremamente desinteressado" }
     ]
 };
 
-// Função para iniciar a construção do texto (chamada pelo botão)
 function gerarTextoInteligente() {
     const caixaTexto = document.getElementById('caixa-texto');
     
-    // Zera o conteúdo atual para escrever o novo
-    caixaTexto.innerHTML = '';
-    
-    // 1. Parágrafo Introdutório (Apresentação formal)
-    let texto = `<p>O presente relatório consolida a observação analítica do corpo docente acerca do desenvolvimento escolar e sociocomportamental do estudante ${dadosDoAluno.nome}. O escopo deste documento visa registrar de forma criteriosa as potencialidades, bem como os desafios de aprendizagem demonstrados no período, resguardando a identidade dos professores mediante numeração sequencial.</p>`;
+    let texto = `<p>O presente relatório descreve o desenvolvimento e a aprendizagem do estudante ${dadosDoAluno.nome}, atualmente matriculado e frequente no 6º ANO DO ENSINO FUNDAMENTAL - Turma 6º REG 2. O objetivo deste documento é consolidar a visão do corpo docente sobre o desempenho, a interação e a atenção do estudante, fornecendo um panorama abrangente de sua vivência no ambiente escolar. Para preservar a identidade dos profissionais, as observações foram anonimizadas e identificadas numericamente (ex.: Docente 1, Docente 2).</p>`;
 
-    // 2. Loop Inteligente pelos Docentes (Construção Gramatical)
     dadosDoAluno.docentes.forEach(docente => {
-        let paragrafo = `Segundo as observações da Docente ${docente.id}, `;
+        let paragrafo = `De acordo com as observações da Docente ${docente.id}, `;
         
-        // Avalia Frequência
         if(docente.frequente) {
             paragrafo += "o estudante mantém assiduidade regular nas aulas. ";
         } else {
-            paragrafo += "registram-se faltas frequentes, o que compromete o ritmo pedagógico. ";
+            paragrafo += "o estudante apresenta faltas constantes. ";
         }
 
-        // Avalia Convivência (Uso de conectivos)
-        paragrafo += `No tocante à socialização, nota-se que ${docente.convivio}. `;
+        paragrafo += `Em relação à convivência, nota-se que ${docente.convivio}. `;
 
-        // Avalia Desempenho e procura contrastes (Positivo vs Negativo)
         const perf = docente.desempenho.toLowerCase();
         
-        if (perf.includes("porém") || perf.includes("mas") || perf.includes("entretanto")) {
-            // Se já tem contraste natural na fala, o sistema adapta
-            paragrafo += `Em relação à aprendizagem, relata-se ${docente.desempenho}.`;
+        if (perf.includes("mas") || perf.includes("contudo") || perf.includes("porém")) {
+            paragrafo += `Quanto ao desempenho acadêmico, a docente relata que o aluno ${docente.desempenho}.`;
         } 
-        else if (perf.includes("dificuldade") || perf.includes("disperso") || perf.includes("desinteresse")) {
-            // Se é um relato preocupante, usamos "Todavia" ou "Por outro lado" dependendo da socialização
-            paragrafo += `Por outro lado, no eixo acadêmico, o aluno apresenta ${docente.desempenho}.`;
+        else if (perf.includes("dificuldade") || perf.includes("disperso")) {
+            paragrafo += `Por outro lado, no aspecto pedagógico, o aluno ${docente.desempenho}.`;
         } 
         else {
-            // Se for totalmente positivo
-            paragrafo += `Ademais, no aspecto cognitivo, destaca-se sua ${docente.desempenho}.`;
+            paragrafo += `Ademais, no aspecto acadêmico, destaca-se que o aluno ${docente.desempenho}.`;
         }
 
         texto += `<p>${paragrafo}</p>`;
     });
 
-    // 3. Parágrafo Conclusivo (Padrão Supervisão)
-    texto += `<p>Diante do quadro exposto, a equipe pedagógica reitera a necessidade de um acompanhamento contínuo. Colocamo-nos à inteira disposição para eventuais esclarecimentos e alinhamentos de estratégias intervencionistas conjuntas.</p>`;
+    texto += `<p>Ademais, colocamo-nos à disposição para maiores esclarecimentos e complementações pontuais caso sejam necessárias.</p>`;
 
-    // Injeta o HTML pronto e formatado na caixa editável
     caixaTexto.innerHTML = texto;
 }
 
-// Pequeno script para manter a data atualizada sempre que gerar um novo
 document.addEventListener('DOMContentLoaded', () => {
     const dataElement = document.getElementById('data-atual');
-    const hoje = new Date();
-    const opcoes = { day: '2-digit', month: 'long', year: 'numeric' };
-    dataElement.textContent = `Carbonita - MG, ${hoje.toLocaleDateString('pt-BR', opcoes)}.`;
+    if(dataElement) {
+        const hoje = new Date();
+        const opcoes = { day: '2-digit', month: 'long', year: 'numeric' };
+        dataElement.textContent = `Carbonita - MG, ${hoje.toLocaleDateString('pt-BR', opcoes)}.`;
+    }
 });
