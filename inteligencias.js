@@ -45,8 +45,7 @@ function processarArquivoExcel(file) {
 }
 
 // ==========================================
-// MÓDULO 2: BANCO DE CONECTIVOS DA PLATAFORMA
-// Baseado no enriquecimento semântico fornecido
+// MÓDULO 2: BANCO SEMÂNTICO (O CÉREBRO HUMANO)
 // ==========================================
 
 const conAbertura = [
@@ -58,45 +57,23 @@ const conAbertura = [
     "Com base no relato da Docente X,"
 ];
 
-// Ideia de Soma (Para adicionar argumentos da mesma polaridade)
-const conSoma = [
-    "Além disso,", "Outrossim,", "Ademais,", "Como também,", 
-    "Da mesma forma,", "Em adição,", "Igualmente,"
+// Verbos de Elocução (Para simular a voz de quem narra)
+const verbosElocucao = [
+    "relata que", "menciona que", "acrescenta que", 
+    "destaca que", "pontua que", "enfatiza que", "observa que"
 ];
+const sujeitosElocucao = ["a educadora", "a docente", "a professora"];
 
-// Ideia de Contraposição (Quando surge um problema ou limitação)
-const conContraste = [
-    "Porém,", "Todavia,", "Contudo,", "Entretanto,", 
-    "No entanto,", "Apesar disso,", "Não obstante,"
-];
+const conSoma = ["Além disso,", "Outrossim,", "Ademais,", "Como também,", "Da mesma forma,", "Em adição,"];
+const conContraste = ["Porém,", "Todavia,", "Contudo,", "Entretanto,", "No entanto,", "Apesar disso,"];
+const conConclusao = ["Portanto,", "Logo,", "Por isso,", "Dessa forma,", "Desse modo,", "Em síntese,"];
+const conFinalidade = ["Com a finalidade de", "Com o fito de", "Com o objetivo de", "Com a intenção de"];
+const conCerteza = ["Certamente,", "Seguramente,", "Sem dúvida,", "Decerto,", "Com toda a certeza,"];
 
-// Ideia de Conclusão / Resumo (Para encerrar o apontamento de um professor)
-const conConclusao = [
-    "Portanto,", "Logo,", "Por isso,", "Por conseguinte,", 
-    "Dessa forma,", "Desse modo,", "Assim sendo,", "Em síntese,"
-];
-
-// Ideia de Finalidade (Para o parágrafo de encerramento)
-const conFinalidade = [
-    "Com a finalidade de", "Com o fito de", "Com o objetivo de", 
-    "Com a intenção de", "A fim de que se consiga"
-];
-
-// Ideia de Certeza / Ênfase (Para o parágrafo de encerramento)
-const conCerteza = [
-    "Certamente,", "Seguramente,", "Sem dúvida,", 
-    "Inquestionavelmente,", "Decerto,", "Evidentemente,", "Com toda a certeza,"
-];
-
-// Ideia de Ordem/Sucessão (Para conectar a última observação)
-const conOrdem = [
-    "Por fim,", "Em seguida,", "Logo após,"
-];
-
-function sortearConectivo(lista, historico) {
-    let conectivosDisponiveis = lista.filter(c => !historico.includes(c));
-    if (conectivosDisponiveis.length === 0) conectivosDisponiveis = lista; // Reseta se já esgotou as opções
-    let sorteado = conectivosDisponiveis[Math.floor(Math.random() * conectivosDisponiveis.length)];
+function sortear(lista, historico) {
+    let disponiveis = lista.filter(c => !historico.includes(c));
+    if (disponiveis.length === 0) disponiveis = lista; // Reseta se esgotar
+    let sorteado = disponiveis[Math.floor(Math.random() * disponiveis.length)];
     historico.push(sorteado);
     return sorteado;
 }
@@ -127,7 +104,7 @@ function analisarResposta(textoOriginal) {
 }
 
 // ==========================================
-// MÓDULO 3: ENGENHARIA DE TEXTO AVANÇADA
+// MÓDULO 3: ENGENHARIA SINTÁTICA AVANÇADA
 // ==========================================
 function gerarTextoDinamico(estudante, turma, linhas) {
     const caixaTexto = document.getElementById('caixa-texto');
@@ -142,7 +119,9 @@ function gerarTextoDinamico(estudante, turma, linhas) {
         if (perguntas.length === 0) return;
 
         let trechos = [];
-        let conectivosUsados = []; 
+        let historicoConectivos = []; 
+        let historicoVerbos = [];
+        let historicoSujeitos = [];
         
         let falouFrequencia = false;
         let falouAtividades = false;
@@ -157,12 +136,13 @@ function gerarTextoDinamico(estudante, turma, linhas) {
             let parte = "";
             let primeiraLetraMin = analise.textoLimpo.charAt(0).toLowerCase() + analise.textoLimpo.slice(1);
 
+            // Preparação dos blocos predicativos (sem repetir o sujeito)
             if (pergMin.includes("frequente") || pergMin.includes("frequência")) {
                 if(falouFrequencia) return;
                 if (analise.isSim) parte = "mantém assiduidade regular nas aulas";
                 else if (analise.isNao) parte = "registra um índice preocupante de infrequência";
                 else if (analise.isAsVezes) parte = "apresenta uma frequência irregular e oscilante";
-                else parte = `em relação à assiduidade, nota-se que ${primeiraLetraMin}`;
+                else parte = `em relação à assiduidade, ${primeiraLetraMin}`;
                 falouFrequencia = true;
             }
             else if (pergMin.includes("atividades") && !pergMin.includes("grupo")) {
@@ -170,7 +150,7 @@ function gerarTextoDinamico(estudante, turma, linhas) {
                 if (analise.isSim) parte = "cumpre com todas as atividades propostas";
                 else if (analise.isNao) parte = "apresenta resistência e não executa as tarefas solicitadas";
                 else if (analise.isAsVezes) parte = "realiza as atividades propostas apenas ocasionalmente";
-                else parte = `quanto às tarefas, observa-se que ${primeiraLetraMin}`;
+                else parte = `quanto às tarefas, ${primeiraLetraMin}`;
                 falouAtividades = true;
             }
             else if (pergMin.includes("convivência") || pergMin.includes("grupo") || pergMin.includes("colegas") || pergMin.includes("participa")) {
@@ -178,7 +158,7 @@ function gerarTextoDinamico(estudante, turma, linhas) {
                 if (analise.isSim) parte = "participa ativamente das aulas e apresenta excelente convívio social";
                 else if (analise.isNao) parte = "demonstra resistência nas interações e trabalhos em grupo";
                 else if (analise.isAsVezes) parte = "envolve-se nas dinâmicas coletivas de forma pontual e restrita";
-                else parte = `no tocante à socialização e participação, a docente relata que ${primeiraLetraMin}`;
+                else parte = `sobre a socialização e participação, ${primeiraLetraMin}`;
                 falouGrupo = true;
             }
             else if (pergMin.includes("desempenho") || pergMin.includes("aprendizado") || pergMin.includes("comportamento")) {
@@ -189,41 +169,47 @@ function gerarTextoDinamico(estudante, turma, linhas) {
                 parte = `vale ressaltar que ${primeiraLetraMin}`;
             }
             else {
-                if (analise.isSim) parte = `houve um retorno afirmativo em relação a este quesito`;
-                else if (analise.isNao) parte = `pontuou-se um retorno negativo para este tópico`;
-                else if (analise.isAsVezes) parte = `observou-se que a ocorrência se dá de forma parcial`;
-                else parte = `pontuou-se também que ${primeiraLetraMin}`;
+                if (analise.isSim) parte = `afirma positivamente sobre este quesito`;
+                else if (analise.isNao) parte = `pontua um retorno negativo para este tópico`;
+                else if (analise.isAsVezes) parte = `observa que a ocorrência se dá de forma parcial`;
+                else parte = `complementa que ${primeiraLetraMin}`;
             }
 
             if(parte !== "") trechos.push(parte);
         });
 
         if (trechos.length > 0) {
-            let cAbertura = sortearConectivo(conAbertura, aberturasUsadas).replace('X', contadorDocentes);
+            // Abertura primorosa: "Conforme as observações da Docente 1, o estudante..."
+            let cAbertura = sortear(conAbertura, aberturasUsadas).replace('X', contadorDocentes);
             let paragrafo = `${cAbertura} o estudante ${trechos[0]}`; 
 
             for (let i = 1; i < trechos.length; i++) {
-                
-                if (i === trechos.length - 1) { 
-                    // Se for o último trecho, utiliza conectivos de ordem ou conclusão
-                    if (trechos[i].includes("vale ressaltar")) {
-                        paragrafo += `. ${trechos[i].charAt(0).toUpperCase() + trechos[i].slice(1)}`;
-                    } else {
-                        let cConc = sortearConectivo(conConclusao, conectivosUsados);
-                        paragrafo += `. ${cConc} nota-se que ${trechos[i]}`;
-                    }
-                } else { 
-                    // Identifica se há palavras de limitação/negação para usar os seus conectivos de Contraposição
-                    let textoAtual = trechos[i].toLowerCase();
-                    let ehNegativo = textoAtual.includes("resistência") || textoAtual.includes("infrequência") || textoAtual.includes("irregular") || textoAtual.includes("dificuldade") || textoAtual.includes("pouco") || textoAtual.includes("desinteresse") || textoAtual.includes("não executa") || textoAtual.includes("apenas ocasionalmente");
+                let trechoAtual = trechos[i];
+                let ehNegativo = trechoAtual.toLowerCase().match(/(resistência|infrequência|irregular|dificuldade|pouco|desinteresse|não executa|apenas ocasionalmente|negativo)/);
+
+                if (i === trechos.length - 1 && !trechoAtual.includes("vale ressaltar")) { 
+                    // Fechamento de parágrafo da professora
+                    let cConc = sortear(conConclusao, historicoConectivos);
+                    let sujEloc = sortear(sujeitosElocucao, historicoSujeitos);
+                    let vEloc = sortear(verbosElocucao, historicoVerbos);
                     
-                    let conectivo = "";
-                    if (ehNegativo) { 
-                        conectivo = sortearConectivo(conContraste, conectivosUsados);
-                    } else {
-                        conectivo = sortearConectivo(conSoma, conectivosUsados);
-                    }
-                    paragrafo += `. ${conectivo} ${trechos[i]}`;
+                    // Tratamento rigoroso de vírgulas para expressões de deslocamento adverbial
+                    let virgula = (trechoAtual.startsWith("em ") || trechoAtual.startsWith("no ") || trechoAtual.startsWith("na ") || trechoAtual.startsWith("sobre ") || trechoAtual.startsWith("quanto ")) ? "," : "";
+                    
+                    paragrafo += `. ${cConc} ${sujEloc} ${vEloc}${virgula} ${trechoAtual}`;
+                } 
+                else if (trechoAtual.includes("vale ressaltar")) {
+                    paragrafo += `. ${trechoAtual.charAt(0).toUpperCase() + trechoAtual.slice(1)}`;
+                }
+                else { 
+                    // Frases de ligação no meio do parágrafo
+                    let conectivo = ehNegativo ? sortear(conContraste, historicoConectivos) : sortear(conSoma, historicoConectivos);
+                    let sujEloc = sortear(sujeitosElocucao, historicoSujeitos);
+                    let vEloc = sortear(verbosElocucao, historicoVerbos);
+                    
+                    let virgula = (trechoAtual.startsWith("em ") || trechoAtual.startsWith("no ") || trechoAtual.startsWith("na ") || trechoAtual.startsWith("sobre ") || trechoAtual.startsWith("quanto ")) ? "," : "";
+
+                    paragrafo += `. ${conectivo} ${sujEloc} ${vEloc}${virgula} ${trechoAtual}`;
                 }
             }
             
@@ -233,9 +219,9 @@ function gerarTextoDinamico(estudante, turma, linhas) {
         }
     });
 
-    // Puxando os conectivos de Finalidade e Certeza que você enviou para fechar o texto
-    let cFinal = sortearConectivo(conFinalidade, []);
-    let cCerteza = sortearConectivo(conCerteza, []);
+    // Encerramento Padrão com Conectivos do Usuário
+    let cFinal = sortear(conFinalidade, []);
+    let cCerteza = sortear(conCerteza, []);
 
     texto += `<p style="text-indent: 30px; text-align: justify; line-height: 1.6;">${cFinal} garantir a evolução do discente, a equipe pedagógica reitera a importância do acompanhamento constante. ${cCerteza} colocamo-nos à inteira disposição da família e demais interessados para eventuais esclarecimentos e alinhamentos de estratégias conjuntas.</p>`;
 
