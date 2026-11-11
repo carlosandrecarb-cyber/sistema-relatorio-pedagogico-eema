@@ -45,35 +45,50 @@ function processarArquivoExcel(file) {
 }
 
 // ==========================================
-// MÓDULO 2: FERRAMENTAS GRAMATICAIS
+// MÓDULO 2: FERRAMENTAS GRAMATICAIS (BANCO DE CONECTIVOS)
 // ==========================================
 
-// Lista de conectivos variados para evitar a síndrome do "Ademais"
-const conectivosMeio = [
-    "Além disso,", "Somado a isso,", "Outro ponto a destacar é que",
-    "Nota-se também que", "No que tange aos demais aspectos,", "Ademais,"
+// 1. Conectivos de Soma/Adição (Para continuar o assunto)
+const conSoma = [
+    "Além disso,", "Outrossim,", "Ademais,", "Somado a isso,", 
+    "Nota-se também que", "Vale acrescentar que", "Como também,"
 ];
 
-// Limpeza de erros comuns de digitação dos professores
+// 2. Conectivos de Contraste/Contraposição (Quando a resposta for negativa/problema)
+const conContraste = [
+    "Por outro lado,", "Todavia,", "Contudo,", "Entretanto,", 
+    "No entanto,", "Apesar disso,"
+];
+
+// 3. Conectivos de Conclusão/Finalização (Para fechar o parágrafo de cada professor)
+const conConclusao = [
+    "Em síntese,", "Dessa forma,", "Desse modo,", "Sendo assim,", 
+    "Logo,", "Por conseguinte,"
+];
+
+// Função de sorteio para não repetir conectivos no mesmo parágrafo
+function sortearConectivo(lista, historico) {
+    let conectivosDisponiveis = lista.filter(c => !historico.includes(c));
+    if (conectivosDisponiveis.length === 0) conectivosDisponiveis = lista; // Reseta se usar todos
+    let sorteado = conectivosDisponiveis[Math.floor(Math.random() * conectivosDisponiveis.length)];
+    historico.push(sorteado);
+    return sorteado;
+}
+
 function limparTexto(texto) {
     let t = String(texto).trim();
-    t = t.replace(/\s+/g, ' '); // Tira espaços duplos
-    t = t.replace(/\s+,/g, ','); // Arruma " , " para ","
-    t = t.replace(/\s+\./g, '.'); // Arruma " . " para "."
-    t = t.replace(/[.!?]+$/, ''); // Tira a pontuação final (o sistema vai colocar a dele)
-    // Correções de vícios comuns (Ex: "as vezes" para "às vezes")
+    t = t.replace(/\s+/g, ' '); 
+    t = t.replace(/\s+,/g, ','); 
+    t = t.replace(/\s+\./g, '.'); 
+    t = t.replace(/[.!?]+$/, ''); 
     t = t.replace(/\bas vezes\b/gi, 'às vezes'); 
     t = t.replace(/\bcomportar-se\b/gi, 'comporta-se'); 
-    
     return t;
 }
 
-// Identificador universal de respostas curtas/vazias
 function analisarResposta(textoOriginal) {
     let limpo = limparTexto(textoOriginal);
     let comparativo = limpo.toLowerCase().replace(/[^a-záéíóúãõç\s]/g, '').trim();
-    
-    // Lista de negações e vazios que devem ser ignorados do relatório
     const vazios = ["nao ha", "nada a declarar", "nada", "nenhuma", "nenhum"];
     
     return {
@@ -100,9 +115,9 @@ function gerarTextoDinamico(estudante, turma, linhas) {
         if (perguntas.length === 0) return;
 
         let trechos = [];
-        let conectivosCopia = [...conectivosMeio]; // Cópia dos conectivos para sortear e apagar (não repetir)
+        let conectivosUsados = []; // Memória para não repetir conectivos no mesmo parágrafo
+        let temProblema = false; // Bandeira para saber se deve usar conectivo de contraste
         
-        // Memória para evitar frases duplicadas
         let falouFrequencia = false;
         let falouAtividades = false;
         let falouGrupo = false;
@@ -116,52 +131,53 @@ function gerarTextoDinamico(estudante, turma, linhas) {
             let parte = "";
             let primeiraLetraMin = analise.textoLimpo.charAt(0).toLowerCase() + analise.textoLimpo.slice(1);
 
-            // TÓPICO: FREQUÊNCIA
+            // FREQUÊNCIA
             if (pergMin.includes("frequente") || pergMin.includes("frequência")) {
-                if(falouFrequencia) return; // Evita duplicar
-                if (analise.isSim) parte = "o estudante mantém assiduidade regular nas aulas";
-                else if (analise.isNao) parte = "registra-se um índice preocupante de infrequência";
-                else if (analise.isAsVezes) parte = "apresenta uma frequência irregular e oscilante";
-                else parte = `em relação à assiduidade, nota-se que ${primeiraLetraMin}`;
+                if(falouFrequencia) return;
+                if (analise.isSim) parte = "mantém assiduidade regular nas aulas";
+                else if (analise.isNao) { parte = "registra um índice preocupante de infrequência"; temProblema = true; }
+                else if (analise.isAsVezes) { parte = "apresenta uma frequência irregular e oscilante"; temProblema = true; }
+                else parte = `em relação à assiduidade, ${primeiraLetraMin}`;
                 falouFrequencia = true;
             }
-            
-            // TÓPICO: ATIVIDADES
+            // ATIVIDADES
             else if (pergMin.includes("atividades") && !pergMin.includes("grupo")) {
                 if(falouAtividades) return;
                 if (analise.isSim) parte = "cumpre com todas as atividades propostas";
-                else if (analise.isNao) parte = "apresenta resistência e não executa as tarefas solicitadas";
-                else if (analise.isAsVezes) parte = "realiza as atividades propostas apenas ocasionalmente";
-                else parte = `quanto às tarefas, observa-se que ${primeiraLetraMin}`;
+                else if (analise.isNao) { parte = "apresenta resistência e não executa as tarefas solicitadas"; temProblema = true; }
+                else if (analise.isAsVezes) { parte = "realiza as atividades propostas apenas ocasionalmente"; temProblema = true; }
+                else {
+                    parte = `quanto às tarefas, observa-se que ${primeiraLetraMin}`;
+                    if(analise.textoLimpo.toLowerCase().includes("dificuldade")) temProblema = true;
+                }
                 falouAtividades = true;
             }
-
-            // TÓPICO: CONVIVÊNCIA / GRUPO
-            else if (pergMin.includes("convivência") || pergMin.includes("grupo") || pergMin.includes("colegas")) {
+            // GRUPO/PARTICIPAÇÃO
+            else if (pergMin.includes("convivência") || pergMin.includes("grupo") || pergMin.includes("colegas") || pergMin.includes("participa")) {
                 if(falouGrupo) return;
                 if (analise.isSim) parte = "participa ativamente das aulas e apresenta excelente convívio social";
-                else if (analise.isNao) parte = "demonstra resistência nas interações e trabalhos em grupo";
-                else if (analise.isAsVezes) parte = "envolve-se nas dinâmicas coletivas de forma pontual e restrita";
-                else parte = `no tocante à socialização, a docente relata que ${primeiraLetraMin}`;
+                else if (analise.isNao) { parte = "demonstra resistência nas interações e trabalhos em grupo"; temProblema = true; }
+                else if (analise.isAsVezes) { parte = "envolve-se nas dinâmicas coletivas de forma pontual e restrita"; temProblema = true; }
+                else {
+                    parte = `no tocante à socialização e participação, a docente relata que ${primeiraLetraMin}`;
+                    if(analise.textoLimpo.toLowerCase().includes("dificuldade") || analise.textoLimpo.toLowerCase().includes("pouco")) temProblema = true;
+                }
                 falouGrupo = true;
             }
-
-            // TÓPICO: DESEMPENHO E COMPORTAMENTO GERAL
+            // DESEMPENHO E COMPORTAMENTO
             else if (pergMin.includes("desempenho") || pergMin.includes("aprendizado") || pergMin.includes("comportamento")) {
                 parte = `no âmbito acadêmico e comportamental, ${primeiraLetraMin}`;
+                if(analise.textoLimpo.toLowerCase().includes("dificuldade") || analise.textoLimpo.toLowerCase().includes("desinteresse")) temProblema = true;
             }
-
-            // TÓPICO: OBSERVAÇÕES EXTRAS (Fatos que chamam atenção)
+            // OBSERVAÇÕES EXTRAS
             else if (pergMin.includes("chame a atenção") || pergMin.includes("fato") || pergMin.includes("relate")) {
-                // Se o professor colocar só "Sim" no campo de observação sem explicar nada, descartamos.
                 if (analise.isSim || analise.isNao || analise.isAsVezes) return; 
                 parte = `vale ressaltar que ${primeiraLetraMin}`;
             }
-            
-            // TÓPICO GENÉRICO (Se você criar uma pergunta nova amanhã)
+            // GENÉRICO
             else {
                 if (analise.isSim) parte = `houve um retorno afirmativo em relação a este quesito`;
-                else if (analise.isNao) parte = `pontuou-se um retorno negativo para este tópico`;
+                else if (analise.isNao) { parte = `pontuou-se um retorno negativo para este tópico`; temProblema = true; }
                 else if (analise.isAsVezes) parte = `observou-se que a ocorrência se dá de forma parcial`;
                 else parte = `pontuou-se também que ${primeiraLetraMin}`;
             }
@@ -169,38 +185,46 @@ function gerarTextoDinamico(estudante, turma, linhas) {
             if(parte !== "") trechos.push(parte);
         });
 
-        // CONSTRUÇÃO COESIVA DO PARÁGRAFO DO DOCENTE
+        // CONSTRUÇÃO COESIVA COM O NOVO BANCO DE CONECTIVOS
         if (trechos.length > 0) {
-            let paragrafo = `Segundo os apontamentos da Docente ${contadorDocentes}, ${trechos[0]}`; // Abertura
+            let paragrafo = `Segundo os apontamentos da Docente ${contadorDocentes}, o estudante ${trechos[0]}`; 
 
             for (let i = 1; i < trechos.length; i++) {
-                // Sorteia um conectivo e remove da lista para não repetir logo em seguida
-                let indexConectivo = Math.floor(Math.random() * conectivosMeio.length);
-                let conectivo = conectivosCopia.length > 0 ? conectivosCopia.splice(indexConectivo, 1)[0] : "Ademais,";
-
-                if (i === trechos.length - 1) { // É a última frase?
+                
+                if (i === trechos.length - 1) { // Última frase
                     if (trechos[i].includes("vale ressaltar")) {
                         paragrafo += `. ${trechos[i].charAt(0).toUpperCase() + trechos[i].slice(1)}`;
                     } else {
-                        paragrafo += `. Por fim, ${trechos[i]}`;
+                        let cConc = sortearConectivo(conConclusao, conectivosUsados);
+                        paragrafo += `. ${cConc} nota-se que ${trechos[i]}`;
                     }
-                } else {
+                } else { // Frases do meio
+                    // Decide se usa um conectivo de SOMA ou de CONTRASTE baseado no tom da frase
+                    let conectivo = "";
+                    if (temProblema && i === 1) { 
+                        // Se detectou problema na frase 2, usa um "Todavia" ou "Contudo"
+                        conectivo = sortearConectivo(conContraste, conectivosUsados);
+                        temProblema = false; // Desliga a bandeira para o resto do parágrafo ser de soma
+                    } else {
+                        // Senão, continua somando argumentos
+                        conectivo = sortearConectivo(conSoma, conectivosUsados);
+                    }
                     paragrafo += `. ${conectivo} ${trechos[i]}`;
                 }
             }
             
-            paragrafo += `.`; // Ponto final obrigatório
+            paragrafo += `.`; 
             texto += `<p style="text-indent: 30px; text-align: justify; line-height: 1.6;">${paragrafo}</p>`;
             contadorDocentes++;
         }
     });
 
-    texto += `<p style="text-indent: 30px; text-align: justify; line-height: 1.6;">Diante do quadro consolidado, a equipe pedagógica reitera a importância do acompanhamento constante. Colocamo-nos à inteira disposição da família e demais interessados para eventuais esclarecimentos e alinhamentos de estratégias conjuntas.</p>`;
+    // Fechamento usando os conectivos da sua lista (ideia de finalidade e certeza)
+    texto += `<p style="text-indent: 30px; text-align: justify; line-height: 1.6;">Com a finalidade de garantir a evolução do discente, a equipe pedagógica reitera a importância do acompanhamento constante. Decerto, colocamo-nos à inteira disposição da família e demais interessados para eventuais esclarecimentos e alinhamentos de estratégias conjuntas.</p>`;
 
     caixaTexto.innerHTML = texto;
 }
 
-// Inicializa a Data
 document.addEventListener('DOMContentLoaded', () => {
     const dataElement = document.getElementById('data-atual');
     if(dataElement) {
