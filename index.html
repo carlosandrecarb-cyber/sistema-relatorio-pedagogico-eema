@@ -16,15 +16,49 @@
         }
         .drop-zone.dragover { background-color: #d1e0f5; border-style: solid; }
         .drop-zone input { display: none; }
+        
+        /* Ajuste fino para os blocos editáveis no rodapé */
+        [contenteditable="true"] {
+            outline: none;
+            transition: 0.2s;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+        [contenteditable="true"]:hover {
+            background-color: #f1f5f9;
+        }
+        [contenteditable="true"]:focus {
+            background-color: #e2e8f0;
+            box-shadow: 0 0 0 2px rgba(11, 57, 117, 0.2);
+        }
+
+        /* Ocultação forçada de todos os painéis e áreas de upload na impressão */
+        @media print {
+            .no-print, #drop-zone, #painel, .painel-controle {
+                display: none !important;
+            }
+            .page {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+            body {
+                background-color: white;
+                padding: 0;
+            }
+        }
     </style>
 </head>
 <body>
 
+    <!-- Área de Arrastar o Excel (some na impressão via CSS @media print) -->
     <div class="drop-zone no-print" id="drop-zone">
         📁 Arraste a planilha do estudante (Excel) aqui ou clique para selecionar
         <input type="file" id="file-input" accept=".xlsx, .xls, .csv">
     </div>
 
+    <!-- Botões de Controle (somem na impressão via CSS @media print) -->
     <div class="painel-controle no-print" id="painel" style="display: none;">
         <h2>Painel do Especialista</h2>
         <div>
@@ -35,7 +69,6 @@
 
     <div class="page">
         <div class="header">
-            <!-- AQUI: Chama diretamente o ficheiro de imagem -->
             <img src="logo.png" alt="Logo EEMA" class="logo">
             
             <div class="header-text">
@@ -67,12 +100,16 @@
             </p>
         </div>
 
+        <!-- Rodapé Editável -->
         <div class="footer">
-            <div class="date" id="data-atual">Carbonita - MG, ...</div>
+            <!-- A data agora pode ser clicada e alterada -->
+            <div class="date" id="data-atual" contenteditable="true">Carbonita - MG, ...</div>
             <div class="signature-box">
                 <div class="sig-line"></div>
-                <div class="sig-name">Carlos André Vieira - MASP: 1.313.442-4</div>
-                <div class="sig-role">Especialista da Educação Básica - Supervisor Pedagógico</div>
+                <!-- O Nome e o MASP agora podem ser clicados e alterados -->
+                <div class="sig-name" contenteditable="true">Carlos André Vieira - MASP: 1.313.442-4</div>
+                <!-- O Cargo também pode ser clicado e alterado -->
+                <div class="sig-role" contenteditable="true">Especialista da Educação Básica - Supervisor Pedagógico</div>
             </div>
         </div>
     </div>
