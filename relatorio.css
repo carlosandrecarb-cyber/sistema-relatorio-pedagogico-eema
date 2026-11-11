@@ -46,8 +46,9 @@ body {
 }
 
 .header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
-.logo { width: 70px; height: 70px; margin-right: 20px; }
-.logo svg { width: 100%; height: 100%; }
+/* A classe logo corrigida para receber a imagem real */
+.logo { width: 70px; height: 70px; margin-right: 20px; object-fit: contain; }
+
 .header-text { display: flex; flex-direction: column; }
 .header-text p { margin: 0 0 2px 0; font-size: 12px; color: #555; }
 .header-text h1 { margin: 0; font-size: 22px; color: #0b3975; text-transform: uppercase; font-weight: 900; }
