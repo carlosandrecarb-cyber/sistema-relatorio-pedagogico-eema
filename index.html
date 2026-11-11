@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EEMA - Sistema de Relatórios</title>
     <link rel="stylesheet" href="relatorio.css">
-    <!-- Biblioteca que ensina o sistema a ler Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         .drop-zone {
@@ -21,13 +20,11 @@
 </head>
 <body>
 
-    <!-- Área de Arrastar o Excel -->
     <div class="drop-zone no-print" id="drop-zone">
         📁 Arraste a planilha do estudante (Excel) aqui ou clique para selecionar
         <input type="file" id="file-input" accept=".xlsx, .xls, .csv">
     </div>
 
-    <!-- Botões de Controle -->
     <div class="painel-controle no-print" id="painel" style="display: none;">
         <h2>Painel do Especialista</h2>
         <div>
@@ -36,11 +33,11 @@
         </div>
     </div>
 
-    <!-- A Folha A4 do Relatório -->
     <div class="page">
         <div class="header">
-            <!-- Puxando a logomarca do arquivo separado -->
+            <!-- AQUI: Chama diretamente o ficheiro de imagem -->
             <img src="logo.png" alt="Logo EEMA" class="logo">
+            
             <div class="header-text">
                 <p>E. E. Mestra Aurora — Plataforma de Governança Pedagógica</p>
                 <h1>RELATÓRIO PEDAGÓGICO INDIVIDUAL</h1>
@@ -64,10 +61,9 @@
             </div>
         </div>
 
-        <!-- Área Editável do Relatório -->
         <div class="content-box" id="caixa-texto" contenteditable="true">
             <p style="color: #999; text-align: center; margin-top: 50px; outline: none;">
-                <em>O relatório dinâmico será gerado automaticamente aqui quando você arrastar a planilha do aluno lá em cima.</em>
+                <em>O relatório dinâmico será gerado automaticamente aqui quando arrastar a planilha do aluno lá em cima.</em>
             </p>
         </div>
 
