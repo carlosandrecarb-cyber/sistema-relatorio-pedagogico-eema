@@ -1,15 +1,15 @@
 // ==========================================
-// MÓDULO 1: INTERFACE, ABAS E BANCO DE DADOS
+// MÓDULO 1: ABAS, BANCO DE DADOS E ARQUIVO
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    atualizarData();
-    carregarSidebar();
+    const dataStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    document.getElementById('data-atual').textContent = `Carbonita - MG, ${dataStr}.`;
+    document.getElementById('etiq-data').textContent = `Carbonita - MG, ${dataStr}.`;
+    carregarSelectHistorico();
 });
 
-// Drag and Drop
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
-
 dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.backgroundColor = '#d1e0f5'; });
 dropZone.addEventListener('dragleave', () => dropZone.style.backgroundColor = '#eef3fa');
 dropZone.addEventListener('click', () => fileInput.click());
@@ -21,50 +21,31 @@ fileInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) processarArquivo(e.target.files[0]);
 });
 
-// Trocar Abas
 function mudarAba(aba) {
     document.getElementById('aba-relatorio').style.display = aba === 'relatorio' ? 'block' : 'none';
     document.getElementById('aba-etiqueta').style.display = aba === 'etiqueta' ? 'flex' : 'none';
-    document.getElementById('btn-tab-relatorio').classList.toggle('active', aba === 'relatorio');
-    document.getElementById('btn-tab-etiqueta').classList.toggle('active', aba === 'etiqueta');
+    
+    document.getElementById('btn-relatorio').className = aba === 'relatorio' ? 'aba-ativa' : 'aba-inativa';
+    document.getElementById('btn-etiqueta').className = aba === 'etiqueta' ? 'aba-ativa' : 'aba-inativa';
 }
 
-function atualizarData() {
-    const dataStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-    document.getElementById('data-atual').textContent = `Carbonita - MG, ${dataStr}.`;
-    document.getElementById('etiq-data').textContent = `Carbonita - MG, ${dataStr}.`;
-}
-
-// Lógica de Banco de Dados Local (Auto-Save)
-function carregarSidebar() {
-    let db = JSON.parse(localStorage.getItem('eema_db')) || {};
-    let lista = document.getElementById('lista-alunos');
-    lista.innerHTML = '';
+function carregarSelectHistorico() {
+    let db = JSON.parse(localStorage.getItem('eema_banco')) || {};
+    let select = document.getElementById('select-historico');
+    select.innerHTML = '<option value="">📂 Selecione um Aluno Salvo</option>';
     
     let nomes = Object.keys(db).sort();
-    if(nomes.length === 0) {
-        lista.innerHTML = '<p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 20px;">Nenhum relatório salvo ainda.</p>';
-        return;
-    }
-    
-    nomes.forEach(estudante => {
-        let btn = document.createElement('button');
-        btn.className = 'btn-aluno';
-        btn.innerHTML = `👤 ${estudante} <br><small>${db[estudante].turma}</small>`;
-        btn.onclick = () => abrirAluno(estudante);
-        lista.appendChild(btn);
+    nomes.forEach(nome => {
+        let opt = document.createElement('option');
+        opt.value = nome;
+        opt.textContent = `${nome} (${db[nome].turma})`;
+        select.appendChild(opt);
     });
 }
 
-function salvarNoBanco(estudante, turma, relatorioHTML) {
-    let db = JSON.parse(localStorage.getItem('eema_db')) || {};
-    db[estudante] = { turma: turma, html: relatorioHTML };
-    localStorage.setItem('eema_db', JSON.stringify(db));
-    carregarSidebar();
-}
-
 function abrirAluno(estudante) {
-    let db = JSON.parse(localStorage.getItem('eema_db')) || {};
+    if(!estudante) return;
+    let db = JSON.parse(localStorage.getItem('eema_banco')) || {};
     let dados = db[estudante];
     if(!dados) return;
 
@@ -79,27 +60,20 @@ function abrirAluno(estudante) {
     mudarAba('relatorio');
 }
 
-function limparHistorico() {
-    if(confirm("Tem a certeza que deseja APAGAR TODOS os relatórios guardados neste computador?")) {
-        localStorage.removeItem('eema_db');
-        location.reload();
-    }
-}
-
-// Auto-salvar edições manuais feitas no texto
+// Auto-Save quando você digita algo novo na tela
 document.getElementById('caixa-texto').addEventListener('input', (e) => {
     let estudante = document.getElementById('nome-estudante').textContent;
     if(estudante && estudante !== "Aguardando arquivo...") {
-        let db = JSON.parse(localStorage.getItem('eema_db')) || {};
+        let db = JSON.parse(localStorage.getItem('eema_banco')) || {};
         if(db[estudante]) {
             db[estudante].html = e.target.innerHTML;
-            localStorage.setItem('eema_db', JSON.stringify(db));
+            localStorage.setItem('eema_banco', JSON.stringify(db));
         }
     }
 });
 
 // ==========================================
-// MÓDULO 2: PROCESSAMENTO E ENGENHARIA DE TEXTO
+// MÓDULO 2: PROCESSAMENTO EXCEL
 // ==========================================
 function processarArquivo(file) {
     const reader = new FileReader();
@@ -110,19 +84,30 @@ function processarArquivo(file) {
         let nomeArquivo = file.name.replace('.xlsx', '').replace('.csv', '');
         let partes = nomeArquivo.split('-'); 
         let estudante = partes[0] ? partes[0].trim() : "Estudante Não Identificado";
-        let turma = partes[1] ? partes[1].replace('(respostas)', '').trim() : "Turma";
+        let turma = partes[1] ? partes[1].replace('(respostas)', '').trim() : "Turma Não Identificada";
 
-        let htmlGerado = gerarHTML(estudante, turma, linhasJson);
-        salvarNoBanco(estudante, turma, htmlGerado);
+        let htmlGerado = gerarHTMLDinamico(estudante, turma, linhasJson);
+        
+        // Salva no Banco Local
+        let db = JSON.parse(localStorage.getItem('eema_banco')) || {};
+        db[estudante] = { turma: turma, html: htmlGerado };
+        localStorage.setItem('eema_banco', JSON.stringify(db));
+        
+        carregarSelectHistorico();
+        
+        // Seleciona automaticamente o aluno no menu
+        document.getElementById('select-historico').value = estudante;
         abrirAluno(estudante);
         
-        dropZone.innerHTML = "✅ Processado e Salvo com Sucesso! Arraste o próximo.";
+        dropZone.innerHTML = "✅ Processado e Salvo! Arraste outro para continuar.";
         dropZone.style.backgroundColor = "#e6fffa"; dropZone.style.color = "#047857";
     };
     reader.readAsArrayBuffer(file);
 }
 
-// Bancos de Palavras
+// ==========================================
+// MÓDULO 3: O SEU TEXTO HUMANIZADO
+// ==========================================
 const conAbertura = ["Segundo os apontamentos da Docente X,", "Conforme as observações registradas pela Docente X,", "De acordo com a avaliação da Docente X,", "Na perspectiva da Docente X,", "Pelos registros pedagógicos da Docente X,"];
 const conElocucaoNormal = ["a educadora relata que", "a professora menciona que", "a docente destaca que", "a educadora enfatiza que", "a professora pontua que"];
 const conElocucaoAdicional = ["A docente acrescenta ainda que", "A educadora também ressalta que", "Ela ainda relata que", "A professora complementa dizendo que", "Acrescenta ainda que"];
@@ -151,7 +136,7 @@ function analisar(texto) {
     };
 }
 
-function gerarHTML(estudante, turma, linhas) {
+function gerarHTMLDinamico(estudante, turma, linhas) {
     let texto = `<p style="text-indent: 30px; text-align: justify; line-height: 1.6;">O presente relatório consolida a observação analítica do corpo docente acerca do desenvolvimento escolar e sociocomportamental do(a) estudante <strong>${estudante}</strong>, regularmente matriculado(a) na turma ${turma}. O escopo deste documento visa registrar, de forma criteriosa e transparente, as informações pedagógicas coletadas no período, resguardando a identidade dos profissionais avaliadores mediante numeração sequencial.</p>`;
 
     let contador = 1;
@@ -168,10 +153,8 @@ function gerarHTML(estudante, turma, linhas) {
         perguntas.forEach((p) => {
             let an = analisar(linha[p]); let pMin = p.toLowerCase();
             if (an.isVazio) return;
-
             let parte = "";
             
-            // CORREÇÃO DO BUG: Desempenho é validado ANTES da Convivência
             if (pMin.includes("frequente") || pMin.includes("frequência")) {
                 if(flFreq) return;
                 if (an.isSim) parte = "o estudante mantém assiduidade regular nas aulas";
@@ -179,9 +162,6 @@ function gerarHTML(estudante, turma, linhas) {
                 else if (an.isAsVezes) parte = "o estudante apresenta uma frequência irregular e oscilante";
                 else parte = `em relação à assiduidade, ${an.txt}`;
                 flFreq = true;
-            }
-            else if (pMin.includes("desempenho") || pMin.includes("aprendizado") || pMin.includes("comportamento")) {
-                parte = `[QUEBRA] o estudante ${an.txt}`;
             }
             else if (pMin.includes("atividades") && !pMin.includes("grupo")) {
                 if(flAtiv) return;
@@ -199,13 +179,14 @@ function gerarHTML(estudante, turma, linhas) {
                 else parte = `sobre a socialização e participação, ${an.txt}`;
                 flGrup = true;
             }
+            else if (pMin.includes("desempenho") || pMin.includes("aprendizado") || pMin.includes("comportamento")) {
+                parte = `[QUEBRA] o estudante ${an.txt}`;
+            }
             else if (pMin.includes("chame a atenção") || pMin.includes("fato") || pMin.includes("relate")) {
                 if (an.isSim || an.isNao || an.isAsVezes) return; 
                 parte = `[RESSALVA] ${an.txt}`; 
             }
-            else {
-                parte = `complementa que ${an.txt}`;
-            }
+            else { parte = `complementa que ${an.txt}`; }
             if(parte !== "") trechos.push(parte);
         });
 
