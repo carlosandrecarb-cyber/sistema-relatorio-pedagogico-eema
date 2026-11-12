@@ -9,13 +9,11 @@
 </head>
 <body>
 
-    <!-- Área de Arrastar o Excel (some na impressão) -->
     <div class="drop-zone no-print" id="drop-zone">
         📁 Arraste a planilha do estudante (Excel) aqui ou clique para selecionar
         <input type="file" id="file-input" accept=".xlsx, .xls, .csv">
     </div>
 
-    <!-- Painel Azul Superior (Com Banco de Dados e Abas) -->
     <div class="painel-controle no-print" id="painel" style="display: none;">
         <div class="painel-esquerda">
             <h2>Banco de Dados:</h2>
@@ -26,7 +24,7 @@
         <div class="painel-direita">
             <button id="btn-relatorio" class="aba-ativa" onclick="mudarAba('relatorio')">📄 Relatório A4</button>
             <button id="btn-etiqueta" class="aba-inativa" onclick="mudarAba('etiqueta')">🏷️ Etiqueta</button>
-            <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir</button>
+            <button class="btn-imprimir" onclick="window.print()">🖨️ Salvar PDF / Imprimir</button>
         </div>
     </div>
 
@@ -73,7 +71,7 @@
         </div>
     </div>
 
-    <!-- ABA 2: A ETIQUETA (Inicia escondida) -->
+    <!-- ABA 2: A ETIQUETA -->
     <div id="aba-etiqueta" class="etiqueta-page" style="display: none;">
         <img src="logo.png" alt="Logo EEMA" class="logo-etiqueta">
         <div class="etiqueta-content">
