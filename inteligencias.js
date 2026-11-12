@@ -1,11 +1,10 @@
-// ==========================================
-// MÓDULO 1: ABAS, BANCO DE DADOS E ARQUIVO
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    const dataStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-    document.getElementById('data-atual').textContent = `Carbonita - MG, ${dataStr}.`;
-    document.getElementById('etiq-data').textContent = `Carbonita - MG, ${dataStr}.`;
-    carregarSelectHistorico();
+    try {
+        const dataStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+        if(document.getElementById('data-atual')) document.getElementById('data-atual').textContent = `Carbonita - MG, ${dataStr}.`;
+        if(document.getElementById('etiq-data')) document.getElementById('etiq-data').textContent = `Carbonita - MG, ${dataStr}.`;
+        carregarSelectHistorico();
+    } catch(e) { console.error("Erro na inicialização:", e); }
 });
 
 const dropZone = document.getElementById('drop-zone');
@@ -24,18 +23,17 @@ fileInput.addEventListener('change', (e) => {
 function mudarAba(aba) {
     document.getElementById('aba-relatorio').style.display = aba === 'relatorio' ? 'block' : 'none';
     document.getElementById('aba-etiqueta').style.display = aba === 'etiqueta' ? 'flex' : 'none';
-    
     document.getElementById('btn-relatorio').className = aba === 'relatorio' ? 'aba-ativa' : 'aba-inativa';
     document.getElementById('btn-etiqueta').className = aba === 'etiqueta' ? 'aba-ativa' : 'aba-inativa';
 }
 
 function carregarSelectHistorico() {
-    let db = JSON.parse(localStorage.getItem('eema_banco')) || {};
+    let db = {};
+    try { db = JSON.parse(localStorage.getItem('eema_banco')) || {}; } catch(e) {}
     let select = document.getElementById('select-historico');
+    if(!select) return;
     select.innerHTML = '<option value="">📂 Selecione um Aluno Salvo</option>';
-    
-    let nomes = Object.keys(db).sort();
-    nomes.forEach(nome => {
+    Object.keys(db).sort().forEach(nome => {
         let opt = document.createElement('option');
         opt.value = nome;
         opt.textContent = `${nome} (${db[nome].turma})`;
@@ -45,14 +43,14 @@ function carregarSelectHistorico() {
 
 function abrirAluno(estudante) {
     if(!estudante) return;
-    let db = JSON.parse(localStorage.getItem('eema_banco')) || {};
+    let db = {};
+    try { db = JSON.parse(localStorage.getItem('eema_banco')) || {}; } catch(e) {}
     let dados = db[estudante];
     if(!dados) return;
 
     document.getElementById('nome-estudante').textContent = estudante;
     document.getElementById('turma-estudante').textContent = dados.turma;
     document.getElementById('caixa-texto').innerHTML = dados.html;
-    
     document.getElementById('etiq-nome').textContent = estudante;
     document.getElementById('etiq-turma').textContent = dados.turma;
     
@@ -60,11 +58,11 @@ function abrirAluno(estudante) {
     mudarAba('relatorio');
 }
 
-// Auto-Save quando você digita algo novo na tela
 document.getElementById('caixa-texto').addEventListener('input', (e) => {
     let estudante = document.getElementById('nome-estudante').textContent;
     if(estudante && estudante !== "Aguardando arquivo...") {
-        let db = JSON.parse(localStorage.getItem('eema_banco')) || {};
+        let db = {};
+        try { db = JSON.parse(localStorage.getItem('eema_banco')) || {}; } catch(err) {}
         if(db[estudante]) {
             db[estudante].html = e.target.innerHTML;
             localStorage.setItem('eema_banco', JSON.stringify(db));
@@ -72,42 +70,40 @@ document.getElementById('caixa-texto').addEventListener('input', (e) => {
     }
 });
 
-// ==========================================
-// MÓDULO 2: PROCESSAMENTO EXCEL
-// ==========================================
 function processarArquivo(file) {
     const reader = new FileReader();
     reader.onload = function(e) {
-        const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-        const linhasJson = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        
-        let nomeArquivo = file.name.replace('.xlsx', '').replace('.csv', '');
-        let partes = nomeArquivo.split('-'); 
-        let estudante = partes[0] ? partes[0].trim() : "Estudante Não Identificado";
-        let turma = partes[1] ? partes[1].replace('(respostas)', '').trim() : "Turma Não Identificada";
+        try {
+            const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
+            const linhasJson = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            
+            let nomeArquivo = file.name.replace('.xlsx', '').replace('.csv', '');
+            let partes = nomeArquivo.split('-'); 
+            let estudante = partes[0] ? partes[0].trim() : "Estudante Não Identificado";
+            let turma = partes[1] ? partes[1].replace('(respostas)', '').trim() : "Turma Não Identificada";
 
-        let htmlGerado = gerarHTMLDinamico(estudante, turma, linhasJson);
-        
-        // Salva no Banco Local
-        let db = JSON.parse(localStorage.getItem('eema_banco')) || {};
-        db[estudante] = { turma: turma, html: htmlGerado };
-        localStorage.setItem('eema_banco', JSON.stringify(db));
-        
-        carregarSelectHistorico();
-        
-        // Seleciona automaticamente o aluno no menu
-        document.getElementById('select-historico').value = estudante;
-        abrirAluno(estudante);
-        
-        dropZone.innerHTML = "✅ Processado e Salvo! Arraste outro para continuar.";
-        dropZone.style.backgroundColor = "#e6fffa"; dropZone.style.color = "#047857";
+            let htmlGerado = gerarHTMLDinamico(estudante, turma, linhasJson);
+            
+            let db = {};
+            try { db = JSON.parse(localStorage.getItem('eema_banco')) || {}; } catch(err) {}
+            db[estudante] = { turma: turma, html: htmlGerado };
+            localStorage.setItem('eema_banco', JSON.stringify(db));
+            
+            carregarSelectHistorico();
+            document.getElementById('select-historico').value = estudante;
+            abrirAluno(estudante);
+            
+            dropZone.innerHTML = "✅ Processado e Salvo! Arraste outro para continuar.";
+            dropZone.style.backgroundColor = "#e6fffa"; dropZone.style.color = "#047857";
+        } catch(error) {
+            console.error(error);
+            dropZone.innerHTML = "❌ Ocorreu um erro ao processar. Atualize a página.";
+            dropZone.style.backgroundColor = "#fee2e2"; dropZone.style.color = "#b91c1c";
+        }
     };
     reader.readAsArrayBuffer(file);
 }
 
-// ==========================================
-// MÓDULO 3: O SEU TEXTO HUMANIZADO
-// ==========================================
 const conAbertura = ["Segundo os apontamentos da Docente X,", "Conforme as observações registradas pela Docente X,", "De acordo com a avaliação da Docente X,", "Na perspectiva da Docente X,", "Pelos registros pedagógicos da Docente X,"];
 const conElocucaoNormal = ["a educadora relata que", "a professora menciona que", "a docente destaca que", "a educadora enfatiza que", "a professora pontua que"];
 const conElocucaoAdicional = ["A docente acrescenta ainda que", "A educadora também ressalta que", "Ela ainda relata que", "A professora complementa dizendo que", "Acrescenta ainda que"];
@@ -125,7 +121,6 @@ function analisar(texto) {
     let t = String(texto).trim().replace(/\s+/g, ' ').replace(/\s+,/g, ',').replace(/\s+\./g, '.').replace(/[.!?]+$/, ''); 
     t = t.replace(/\bas vezes\b/gi, 'às vezes').replace(/\bcomportar-se\b/gi, 'comporta-se');
     if(t.length > 0 && t.charAt(0) !== t.charAt(0).toLowerCase()) t = t.charAt(0).toLowerCase() + t.slice(1);
-    
     let comp = t.toLowerCase().replace(/[^a-záéíóúãõç\s]/g, '').trim();
     return {
         txt: t,
@@ -139,15 +134,13 @@ function analisar(texto) {
 function gerarHTMLDinamico(estudante, turma, linhas) {
     let texto = `<p style="text-indent: 30px; text-align: justify; line-height: 1.6;">O presente relatório consolida a observação analítica do corpo docente acerca do desenvolvimento escolar e sociocomportamental do(a) estudante <strong>${estudante}</strong>, regularmente matriculado(a) na turma ${turma}. O escopo deste documento visa registrar, de forma criteriosa e transparente, as informações pedagógicas coletadas no período, resguardando a identidade dos profissionais avaliadores mediante numeração sequencial.</p>`;
 
-    let contador = 1;
-    let aberturas = []; 
+    let contador = 1; let aberturas = []; 
 
     linhas.forEach(linha => {
         let perguntas = Object.keys(linha).filter(c => !c.toLowerCase().includes('data/hora') && !c.toLowerCase().includes('professor'));
         if (perguntas.length === 0) return;
 
-        let trechos = [];
-        let hCon = []; let hEloc = [];
+        let trechos = []; let hCon = []; let hEloc = [];
         let flFreq = false; let flAtiv = false; let flGrup = false;
 
         perguntas.forEach((p) => {
