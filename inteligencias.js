@@ -45,7 +45,7 @@ function processarArquivoExcel(file) {
 }
 
 // ==========================================
-// MÓDULO 2: BANCO SEMÂNTICO (O CÉREBRO HUMANO)
+// MÓDULO 2: BANCO SEMÂNTICO NARRATIVO
 // ==========================================
 
 const conAbertura = [
@@ -57,22 +57,26 @@ const conAbertura = [
     "Com base no relato da Docente X,"
 ];
 
-// Verbos de Elocução (Para simular a voz de quem narra)
-const verbosElocucao = [
-    "relata que", "menciona que", "acrescenta que", 
-    "destaca que", "pontua que", "enfatiza que", "observa que"
+// O Sujeito sempre vem acompanhado de um verbo de ação (Simulando o teu texto)
+const conElocucaoNormal = [
+    "a educadora relata que", "a professora menciona que", 
+    "a docente destaca que", "a educadora enfatiza que", 
+    "a professora pontua que"
 ];
-const sujeitosElocucao = ["a educadora", "a docente", "a professora"];
+// Para quando houver necessidade de quebrar frases longas (Ex: "Ela ainda acrescenta que")
+const conElocucaoAdicional = [
+    "A docente acrescenta ainda que", "A educadora também ressalta que", 
+    "Ela ainda relata que", "A professora complementa dizendo que", 
+    "Acrescenta ainda que"
+];
 
 const conSoma = ["Além disso,", "Outrossim,", "Ademais,", "Como também,", "Da mesma forma,", "Em adição,"];
-const conContraste = ["Porém,", "Todavia,", "Contudo,", "Entretanto,", "No entanto,", "Apesar disso,"];
-const conConclusao = ["Portanto,", "Logo,", "Por isso,", "Dessa forma,", "Desse modo,", "Em síntese,"];
-const conFinalidade = ["Com a finalidade de", "Com o fito de", "Com o objetivo de", "Com a intenção de"];
-const conCerteza = ["Certamente,", "Seguramente,", "Sem dúvida,", "Decerto,", "Com toda a certeza,"];
+const conContraste = ["Todavia,", "Contudo,", "Entretanto,", "No entanto,", "Apesar disso,"];
+const conFinalidade = ["Com a intenção de", "Com a finalidade de", "Com o fito de", "A fim de"];
 
 function sortear(lista, historico) {
     let disponiveis = lista.filter(c => !historico.includes(c));
-    if (disponiveis.length === 0) disponiveis = lista; // Reseta se esgotar
+    if (disponiveis.length === 0) disponiveis = lista; // Reseta o histórico se gastar tudo
     let sorteado = disponiveis[Math.floor(Math.random() * disponiveis.length)];
     historico.push(sorteado);
     return sorteado;
@@ -84,8 +88,13 @@ function limparTexto(texto) {
     t = t.replace(/\s+,/g, ','); 
     t = t.replace(/\s+\./g, '.'); 
     t = t.replace(/[.!?]+$/, ''); 
+    // Correções vitais
     t = t.replace(/\bas vezes\b/gi, 'às vezes'); 
     t = t.replace(/\bcomportar-se\b/gi, 'comporta-se'); 
+    // Torna a primeira letra minúscula, exceto se for "Se" ou se começar com letra já minúscula
+    if(t.length > 0 && t.charAt(0) !== t.charAt(0).toLowerCase()){
+        t = t.charAt(0).toLowerCase() + t.slice(1);
+    }
     return t;
 }
 
@@ -104,7 +113,7 @@ function analisarResposta(textoOriginal) {
 }
 
 // ==========================================
-// MÓDULO 3: ENGENHARIA SINTÁTICA AVANÇADA
+// MÓDULO 3: ENGENHARIA SINTÁTICA NARRATIVA
 // ==========================================
 function gerarTextoDinamico(estudante, turma, linhas) {
     const caixaTexto = document.getElementById('caixa-texto');
@@ -120,8 +129,7 @@ function gerarTextoDinamico(estudante, turma, linhas) {
 
         let trechos = [];
         let historicoConectivos = []; 
-        let historicoVerbos = [];
-        let historicoSujeitos = [];
+        let historicoElocucao = [];
         
         let falouFrequencia = false;
         let falouAtividades = false;
@@ -130,19 +138,17 @@ function gerarTextoDinamico(estudante, turma, linhas) {
         perguntas.forEach((pergunta) => {
             let analise = analisarResposta(linha[pergunta]);
             let pergMin = pergunta.toLowerCase();
-
             if (analise.isVazio) return;
 
             let parte = "";
-            let primeiraLetraMin = analise.textoLimpo.charAt(0).toLowerCase() + analise.textoLimpo.slice(1);
+            let txt = analise.textoLimpo;
 
-            // Preparação dos blocos predicativos (sem repetir o sujeito)
             if (pergMin.includes("frequente") || pergMin.includes("frequência")) {
                 if(falouFrequencia) return;
-                if (analise.isSim) parte = "mantém assiduidade regular nas aulas";
-                else if (analise.isNao) parte = "registra um índice preocupante de infrequência";
-                else if (analise.isAsVezes) parte = "apresenta uma frequência irregular e oscilante";
-                else parte = `em relação à assiduidade, ${primeiraLetraMin}`;
+                if (analise.isSim) parte = "o estudante mantém assiduidade regular nas aulas";
+                else if (analise.isNao) parte = "o estudante registra um índice preocupante de infrequência";
+                else if (analise.isAsVezes) parte = "o estudante apresenta uma frequência irregular e oscilante";
+                else parte = `em relação à assiduidade, ${txt}`;
                 falouFrequencia = true;
             }
             else if (pergMin.includes("atividades") && !pergMin.includes("grupo")) {
@@ -150,88 +156,77 @@ function gerarTextoDinamico(estudante, turma, linhas) {
                 if (analise.isSim) parte = "cumpre com todas as atividades propostas";
                 else if (analise.isNao) parte = "apresenta resistência e não executa as tarefas solicitadas";
                 else if (analise.isAsVezes) parte = "realiza as atividades propostas apenas ocasionalmente";
-                else parte = `quanto às tarefas, ${primeiraLetraMin}`;
+                else parte = `quanto às tarefas, ${txt}`;
                 falouAtividades = true;
             }
             else if (pergMin.includes("convivência") || pergMin.includes("grupo") || pergMin.includes("colegas") || pergMin.includes("participa")) {
                 if(falouGrupo) return;
-                if (analise.isSim) parte = "participa ativamente das aulas e apresenta excelente convívio social";
-                else if (analise.isNao) parte = "demonstra resistência nas interações e trabalhos em grupo";
-                else if (analise.isAsVezes) parte = "envolve-se nas dinâmicas coletivas de forma pontual e restrita";
-                else parte = `sobre a socialização e participação, ${primeiraLetraMin}`;
+                if (analise.isSim) parte = "sobre a socialização e participação, participa ativamente das aulas e apresenta excelente convívio social";
+                else if (analise.isNao) parte = "sobre a socialização e participação, demonstra resistência nas interações e trabalhos em grupo";
+                else if (analise.isAsVezes) parte = "sobre a socialização e participação, envolve-se nas dinâmicas coletivas de forma pontual e restrita";
+                else parte = `sobre a socialização e participação, ${txt}`;
                 falouGrupo = true;
             }
             else if (pergMin.includes("desempenho") || pergMin.includes("aprendizado") || pergMin.includes("comportamento")) {
-                parte = `no âmbito acadêmico e comportamental, ${primeiraLetraMin}`;
+                // Ao invés de vírgula, este bloco usa a quebra de sentença de elocução: "Acrescenta ainda que..."
+                parte = `[QUEBRA] o estudante ${txt}`;
             }
             else if (pergMin.includes("chame a atenção") || pergMin.includes("fato") || pergMin.includes("relate")) {
                 if (analise.isSim || analise.isNao || analise.isAsVezes) return; 
-                parte = `vale ressaltar que ${primeiraLetraMin}`;
+                parte = `[RESSALVA] ${txt}`; // Marcação para gerar o "Além disso, ressalta que" ou "A docente ressalta que"
             }
             else {
                 if (analise.isSim) parte = `afirma positivamente sobre este quesito`;
                 else if (analise.isNao) parte = `pontua um retorno negativo para este tópico`;
                 else if (analise.isAsVezes) parte = `observa que a ocorrência se dá de forma parcial`;
-                else parte = `complementa que ${primeiraLetraMin}`;
+                else parte = `complementa que ${txt}`;
             }
 
             if(parte !== "") trechos.push(parte);
         });
 
+        // -------------------------------------------------------------
+        // CONSTRUTOR NARRATIVO DO PARÁGRAFO (O modelo do Professor Carlos)
+        // -------------------------------------------------------------
         if (trechos.length > 0) {
-            // Abertura primorosa: "Conforme as observações da Docente 1, o estudante..."
             let cAbertura = sortear(conAbertura, aberturasUsadas).replace('X', contadorDocentes);
-            let paragrafo = `${cAbertura} o estudante ${trechos[0]}`; 
+            let paragrafo = `${cAbertura} ${trechos[0]}`; // Ex: "Pelos registros da Docente 1, o estudante mantém assiduidade..."
 
             for (let i = 1; i < trechos.length; i++) {
-                let trechoAtual = trechos[i];
-                let ehNegativo = trechoAtual.toLowerCase().match(/(resistência|infrequência|irregular|dificuldade|pouco|desinteresse|não executa|apenas ocasionalmente|negativo)/);
+                let txtAtual = trechos[i];
 
-                if (i === trechos.length - 1 && !trechoAtual.includes("vale ressaltar")) { 
-                    // Fechamento de parágrafo da professora
-                    let cConc = sortear(conConclusao, historicoConectivos);
-                    let sujEloc = sortear(sujeitosElocucao, historicoSujeitos);
-                    let vEloc = sortear(verbosElocucao, historicoVerbos);
-                    
-                    // Tratamento rigoroso de vírgulas para expressões de deslocamento adverbial
-                    let virgula = (trechoAtual.startsWith("em ") || trechoAtual.startsWith("no ") || trechoAtual.startsWith("na ") || trechoAtual.startsWith("sobre ") || trechoAtual.startsWith("quanto ")) ? "," : "";
-                    
-                    paragrafo += `. ${cConc} ${sujEloc} ${vEloc}${virgula} ${trechoAtual}`;
+                if (txtAtual.includes("[RESSALVA]")) {
+                    txtAtual = txtAtual.replace("[RESSALVA]", "").trim();
+                    let elocucaoFinal = (i % 2 === 0) ? "A docente ressalta que" : "Além disso, a educadora ressalta que";
+                    paragrafo += `. ${elocucaoFinal} ${txtAtual}`;
                 } 
-                else if (trechoAtual.includes("vale ressaltar")) {
-                    paragrafo += `. ${trechoAtual.charAt(0).toUpperCase() + trechoAtual.slice(1)}`;
-                }
-                else { 
-                    // Frases de ligação no meio do parágrafo
+                else if (txtAtual.includes("[QUEBRA]")) {
+                    txtAtual = txtAtual.replace("[QUEBRA]", "").trim();
+                    let elocucaoQuebra = sortear(conElocucaoAdicional, historicoElocucao);
+                    paragrafo += `. ${elocucaoQuebra} ${txtAtual}`;
+                } 
+                else {
+                    let ehNegativo = txtAtual.toLowerCase().match(/(resistência|infrequência|irregular|dificuldade|pouco|desinteresse|não executa|apenas ocasionalmente|negativo)/);
                     let conectivo = ehNegativo ? sortear(conContraste, historicoConectivos) : sortear(conSoma, historicoConectivos);
-                    let sujEloc = sortear(sujeitosElocucao, historicoSujeitos);
-                    let vEloc = sortear(verbosElocucao, historicoVerbos);
+                    let vozNarativa = sortear(conElocucaoNormal, historicoElocucao);
                     
-                    let virgula = (trechoAtual.startsWith("em ") || trechoAtual.startsWith("no ") || trechoAtual.startsWith("na ") || trechoAtual.startsWith("sobre ") || trechoAtual.startsWith("quanto ")) ? "," : "";
-
-                    paragrafo += `. ${conectivo} ${sujEloc} ${vEloc}${virgula} ${trechoAtual}`;
+                    paragrafo += `. ${conectivo} ${vozNarativa} ${txtAtual}`;
                 }
             }
             
             paragrafo += `.`; 
+            // Conserta duplos espaços ou pontos que possam ter passado na montagem
+            paragrafo = paragrafo.replace(/\s+/g, ' ').replace(/\.\./g, '.');
             texto += `<p style="text-indent: 30px; text-align: justify; line-height: 1.6;">${paragrafo}</p>`;
             contadorDocentes++;
         }
     });
 
-    // Encerramento Padrão com Conectivos do Usuário
+    // -------------------------------------------------------------
+    // NOVO FECHAMENTO PEDAGÓGICO (O Modelo da Mestra Aurora)
+    // -------------------------------------------------------------
     let cFinal = sortear(conFinalidade, []);
-    let cCerteza = sortear(conCerteza, []);
-
-    texto += `<p style="text-indent: 30px; text-align: justify; line-height: 1.6;">${cFinal} garantir a evolução do discente, a equipe pedagógica reitera a importância do acompanhamento constante. ${cCerteza} colocamo-nos à inteira disposição da família e demais interessados para eventuais esclarecimentos e alinhamentos de estratégias conjuntas.</p>`;
+    texto += `<p style="text-indent: 30px; text-align: justify; line-height: 1.6;">${cFinal} garantir a evolução do discente, a equipe pedagógica reitera que sempre está motivando e orientando o estudante em relação às suas necessidades pedagógicas. No mais, colocamo-nos à inteira disposição da família e demais interessados para eventuais esclarecimentos e alinhamentos de estratégias conjuntas.</p>`;
 
     caixaTexto.innerHTML = texto;
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const dataElement = document.getElementById('data-atual');
-    if(dataElement) {
-        const dataStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-        dataElement.textContent = `Carbonita - MG, ${dataStr}.`;
-    }
-});
