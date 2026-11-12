@@ -58,7 +58,6 @@ body {
 .sig-name { font-size: 13px; font-weight: 900; color: #0b3975; outline: none; }
 .sig-role { font-size: 11px; color: #666; outline: none; }
 
-/* ETIQUETA */
 .etiqueta-page {
     background-color: #fff; border: 2px dashed #94a3b8; border-radius: 12px;
     padding: 25px 30px; display: flex; align-items: center; width: 650px;
@@ -70,10 +69,13 @@ body {
 .etiqueta-info { font-size: 14px; color: #333; margin-bottom: 10px; text-align: center; }
 .etiqueta-footer { font-size: 12px; color: #444; margin-top: 15px; outline: none; }
 
+[contenteditable="true"] { transition: 0.2s; padding: 2px 5px; border-radius: 4px; }
+[contenteditable="true"]:hover { background-color: #f1f5f9; }
+
 @media print {
     body { background-color: transparent; padding: 0; }
     .no-print { display: none !important; }
-    .page { box-shadow: none; max-width: 100%; padding: 0; }
+    .page { box-shadow: none; max-width: 100%; padding: 0; margin-bottom: 0; }
     .content-box { border: none; padding: 0; min-height: auto; }
     .etiqueta-page { border: 2px dashed #000; box-shadow: none; margin-top: 0; }
 }
