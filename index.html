@@ -3,115 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EEMA - Sistema de Relatórios</title>
+    <title>EEMA - Governança Pedagógica</title>
     <link rel="stylesheet" href="relatorio.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        .drop-zone {
-            width: 100%; max-width: 800px; padding: 25px; margin-bottom: 30px;
-            border: 2px dashed #0b3975; border-radius: 8px;
-            background-color: #eef3fa; text-align: center;
-            color: #0b3975; font-weight: bold; cursor: pointer; transition: 0.3s;
-            box-sizing: border-box;
-        }
-        .drop-zone.dragover { background-color: #d1e0f5; border-style: solid; }
-        .drop-zone input { display: none; }
-        
-        /* Ajuste fino para os blocos editáveis no rodapé */
-        [contenteditable="true"] {
-            outline: none;
-            transition: 0.2s;
-            padding: 2px 5px;
-            border-radius: 4px;
-        }
-        [contenteditable="true"]:hover {
-            background-color: #f1f5f9;
-        }
-        [contenteditable="true"]:focus {
-            background-color: #e2e8f0;
-            box-shadow: 0 0 0 2px rgba(11, 57, 117, 0.2);
-        }
-
-        /* Ocultação forçada de todos os painéis e áreas de upload na impressão */
-        @media print {
-            .no-print, #drop-zone, #painel, .painel-controle {
-                display: none !important;
-            }
-            .page {
-                box-shadow: none;
-                margin: 0;
-                padding: 0;
-                max-width: 100%;
-            }
-            body {
-                background-color: white;
-                padding: 0;
-            }
-        }
-    </style>
 </head>
 <body>
 
-    <!-- Área de Arrastar o Excel (some na impressão via CSS @media print) -->
-    <div class="drop-zone no-print" id="drop-zone">
-        📁 Arraste a planilha do estudante (Excel) aqui ou clique para selecionar
-        <input type="file" id="file-input" accept=".xlsx, .xls, .csv">
+    <!-- BARRA LATERAL: BANCO DE DADOS (Histórico) -->
+    <div class="sidebar no-print">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="EEMA Logo" style="width: 50px; margin-bottom: 10px;">
+            <h3>Banco de Relatórios</h3>
+        </div>
+        <div id="lista-alunos" class="lista-alunos">
+            <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 20px;">Nenhum relatório salvo ainda.</p>
+        </div>
+        <button class="btn-limpar" onclick="limparHistorico()">🗑️ Limpar Banco de Dados</button>
     </div>
 
-    <!-- Botões de Controle (somem na impressão via CSS @media print) -->
-    <div class="painel-controle no-print" id="painel" style="display: none;">
-        <h2>Painel do Especialista</h2>
-        <div>
-            <button onclick="window.print()">🖨️ Salvar PDF / Imprimir</button>
-            <a href="etiqueta.html"><button>Ir para Etiqueta</button></a>
+    <!-- ÁREA PRINCIPAL -->
+    <div class="main-wrapper">
+        
+        <!-- Área de Upload -->
+        <div class="drop-zone no-print" id="drop-zone">
+            📁 Arraste a planilha do estudante (Excel) aqui ou clique para selecionar
+            <input type="file" id="file-input" accept=".xlsx, .xls, .csv">
         </div>
-    </div>
 
-    <div class="page">
-        <div class="header">
-            <img src="logo.png" alt="Logo EEMA" class="logo">
-            
-            <div class="header-text">
-                <p>E. E. Mestra Aurora — Plataforma de Governança Pedagógica</p>
-                <h1>RELATÓRIO PEDAGÓGICO INDIVIDUAL</h1>
+        <!-- Painel de Abas e Impressão -->
+        <div class="painel-controle no-print" id="painel" style="display: none;">
+            <div class="tabs">
+                <button id="btn-tab-relatorio" class="tab-btn active" onclick="mudarAba('relatorio')">📄 Relatório A4</button>
+                <button id="btn-tab-etiqueta" class="tab-btn" onclick="mudarAba('etiqueta')">🏷️ Etiqueta</button>
+            </div>
+            <button class="btn-imprimir" onclick="window.print()">🖨️ Salvar PDF / Imprimir</button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA 1: RELATÓRIO PEDAGÓGICO -->
+        <!-- ========================================== -->
+        <div id="aba-relatorio" class="page">
+            <div class="header">
+                <img src="logo.png" alt="Logo EEMA" class="logo">
+                <div class="header-text">
+                    <p>E. E. Mestra Aurora — Plataforma de Governança Pedagógica</p>
+                    <h1>RELATÓRIO PEDAGÓGICO INDIVIDUAL</h1>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="info-bar">
+                <div class="info-col">
+                    <span class="info-label">ESTUDANTE</span>
+                    <span class="info-value" id="nome-estudante">Aguardando arquivo...</span>
+                </div>
+                <div class="info-col">
+                    <span class="info-label">ANO/TURMA</span>
+                    <span class="info-value" id="turma-estudante">...</span>
+                </div>
+                <div class="info-col">
+                    <span class="info-label">ANO LETIVO</span>
+                    <span class="info-value">2026</span>
+                </div>
+            </div>
+            <!-- Caixa de Texto com Auto-Save -->
+            <div class="content-box" id="caixa-texto" contenteditable="true">
+                <p style="color: #999; text-align: center; margin-top: 50px;">
+                    <em>Arraste a planilha ou selecione um aluno no banco de dados ao lado.</em>
+                </p>
+            </div>
+            <div class="footer">
+                <div class="date" id="data-atual" contenteditable="true">Carbonita - MG, ...</div>
+                <div class="signature-box">
+                    <div class="sig-line"></div>
+                    <div class="sig-name" contenteditable="true">Carlos André Vieira - MASP: 1.313.442-4</div>
+                    <div class="sig-role" contenteditable="true">Especialista da Educação Básica - Supervisor Pedagógico</div>
+                </div>
             </div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="info-bar">
-            <div class="info-col">
-                <span class="info-label">ESTUDANTE</span>
-                <span class="info-value" id="nome-estudante">Aguardando arquivo...</span>
-            </div>
-            <div class="info-col">
-                <span class="info-label">ANO/TURMA</span>
-                <span class="info-value" id="turma-estudante">Aguardando arquivo...</span>
-            </div>
-            <div class="info-col">
-                <span class="info-label">ANO LETIVO</span>
-                <span class="info-value">2026</span>
-            </div>
-        </div>
-
-        <div class="content-box" id="caixa-texto" contenteditable="true">
-            <p style="color: #999; text-align: center; margin-top: 50px; outline: none;">
-                <em>O relatório dinâmico será gerado automaticamente aqui quando arrastar a planilha do aluno lá em cima.</em>
-            </p>
-        </div>
-
-        <!-- Rodapé Editável -->
-        <div class="footer">
-            <!-- A data agora pode ser clicada e alterada -->
-            <div class="date" id="data-atual" contenteditable="true">Carbonita - MG, ...</div>
-            <div class="signature-box">
-                <div class="sig-line"></div>
-                <!-- O Nome e o MASP agora podem ser clicados e alterados -->
-                <div class="sig-name" contenteditable="true">Carlos André Vieira - MASP: 1.313.442-4</div>
-                <!-- O Cargo também pode ser clicado e alterado -->
-                <div class="sig-role" contenteditable="true">Especialista da Educação Básica - Supervisor Pedagógico</div>
+        <!-- ========================================== -->
+        <!-- ABA 2: ETIQUETA -->
+        <!-- ========================================== -->
+        <div id="aba-etiqueta" class="page etiqueta-page" style="display: none;">
+            <div class="etiqueta-container">
+                <img src="logo.png" alt="Logo EEMA" class="logo-etiqueta">
+                <div class="etiqueta-content">
+                    <div class="etiqueta-title">ESCOLA ESTADUAL MESTRA AURORA</div>
+                    <div class="etiqueta-info"><strong>ESTUDANTE:</strong> <span id="etiq-nome">...</span></div>
+                    <div class="etiqueta-info"><strong>TURMA:</strong> <span id="etiq-turma">...</span></div>
+                    <div class="etiqueta-info"><strong>CONTEÚDO:</strong> DOCUMENTOS PEDAGÓGICOS - 2026</div>
+                    <div class="etiqueta-footer" id="etiq-data" contenteditable="true">Carbonita - MG, ...</div>
+                </div>
             </div>
         </div>
+
     </div>
 
     <script src="inteligencias.js"></script>
